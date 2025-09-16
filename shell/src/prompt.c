@@ -23,6 +23,6 @@ void display_prompt() {
     } else {
         strcpy(display_path, cwd);
     }
-    printf("<%s@%s:%s>", username, hostname, display_path);
+    printf("<%s@%s:%s> ", username, hostname, display_path);
     fflush(stdout);
 }
