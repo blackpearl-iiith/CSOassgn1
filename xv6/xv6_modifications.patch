@@ -1,0 +1,112 @@
+diff --git a/Makefile b/Makefile
+index 4ad83a9..4f6bc6e 100644
+--- a/Makefile
++++ b/Makefile
+@@ -59,7 +59,7 @@ LD = $(TOOLPREFIX)ld
+ OBJCOPY = $(TOOLPREFIX)objcopy
+ OBJDUMP = $(TOOLPREFIX)objdump
+ 
+-CFLAGS = -Wall -Werror -Wno-unknown-attributes -O -fno-omit-frame-pointer -ggdb -gdwarf-2 -D$(SCHEDULER)
++CFLAGS = -Wall -Werror -Wno-unknown-attributes -O -fno-omit-frame-pointer -ggdb -gdwarf-2 $(if $(SCHEDULER),-D$(SCHEDULER))
+ CFLAGS += -MD
+ CFLAGS += -mcmodel=medany
+ CFLAGS += -ffreestanding
+@@ -166,7 +166,7 @@ QEMUGDB = $(shell if $(QEMU) -help | grep -q '^-gdb'; \
+ 	then echo "-gdb tcp::$(GDBPORT)"; \
+ 	else echo "-s -p $(GDBPORT)"; fi)
+ ifndef CPUS
+-CPUS := 3
++CPUS := 1
+ endif
+ 
+ QEMUOPTS = -machine virt -bios none -kernel $K/kernel -m 128M -smp $(CPUS) -nographic
+diff --git a/kernel/trap.c b/kernel/trap.c
+index 9bfe796..42935f8 100644
+--- a/kernel/trap.c
++++ b/kernel/trap.c
+@@ -9,13 +9,15 @@
+ struct spinlock tickslock;
+ uint ticks;
+ 
++#ifdef CFS
+ // Array of weights corresponding to nice values from -20 to 19.
+ static const int weights[40] = {
+     88761, 71755, 56864, 45192, 36300, 29117, 23224, 18563, 14924, 11943,
+-     9548,  7628,  6103,  4895,  3919,  3121,  2501,  1991,  1586,  1277,
+-     1024,   820,   655,   526,   423,   335,   272,   215,   172,   137,
+-      110,    87,    70,    56,    45,    36,    29,    23,    18,    15
++    9548,  7628,  6103,  4895,  3919,  3121,  2501,  1991,  1586,  1277,
++    1024,   820,   655,   526,   423,   335,   272,   215,   172,   137,
++    110,    87,    70,    56,    45,    36,    29,    23,    18,    15
+ };
++#endif
+ 
+ extern char trampoline[], uservec[];
+ 
+diff --git a/user/schedtest.c b/user/schedtest.c
+index 053859e..7fd9809 100644
+--- a/user/schedtest.c
++++ b/user/schedtest.c
+@@ -1,40 +1,28 @@
+ #include "kernel/types.h"
++#include "kernel/stat.h"
+ #include "user/user.h"
++#include "kernel/fcntl.h"
+ 
+-void spin()
+-{
+-  for (long i = 0; i < 1000000000; i++) {
+-    asm volatile("nop");
+-  }
+-}
++#define NFORK 10
++#define IO 5
+ 
+-int
+-main(void)
+-{
+-  printf("Starting scheduler test...\n");
++int main() {
++  int n, pid;
+   
+-  int pid1 = fork();
+-  if (pid1 == 0) {
+-    // Child 1
+-    printf("Child 1 spinning...\n");
+-    spin();
+-    printf("Child 1 done.\n");
+-    exit(0);
+-  }
+-
+-  int pid2 = fork();
+-  if (pid2 == 0) {
+-    // Child 2
+-    printf("Child 2 spinning...\n");
+-    spin();
+-    printf("Child 2 done.\n");
+-    exit(0);
++  for (n = 0; n < NFORK; n++) {
++    pid = fork();
++    if (pid < 0)
++      break;
++    if (pid == 0) {
++      if (n < IO) {
++        pause(200); // IO-bound process
++      } else {
++        for (volatile int i = 0; i < 1000000000; i++) {} // CPU-bound process
++      }
++      // printf("\nProcess %d finished\n", n);
++      exit(0);
++    }
+   }
+-  
+-  // Parent waits for both children
+-  wait(0);
+-  wait(0);
+-
+-  printf("Scheduler test done.\n");
+   exit(0);
+-}
+\ No newline at end of file
++}
++
