@@ -1,0 +1,15 @@
+total 92
+-rw-rw-rw-  1 codespace codespace   901 Sep 13 04:54 Makefile
+-rw-rw-rw-  1 codespace codespace    83 Sep 13 16:12 a.c
+-rwxrwxrwx  1 codespace codespace 16056 Sep 13 16:12 a.out
+-rw-rw-rw-  1 codespace codespace     0 Sep 13 01:04 empty_file.txt
+drwxrwxrwx+ 2 codespace codespace  4096 Sep 13 03:02 include
+-rw-rw-rw-  1 codespace codespace    66 Sep 13 01:04 new_test.txt
+drwxrwxrwx+ 2 codespace codespace  4096 Sep 16 03:57 obj
+-rw-r--r--  1 codespace codespace     0 Sep 16 04:02 output.txt
+-rw-r--r--  1 codespace codespace    17 Sep 11 23:49 output_.txt
+-rw-r--r--  1 codespace codespace    17 Sep 11 23:48 output_copy.txt
+-rwxrwxrwx  1 codespace codespace 36488 Sep 16 03:57 shell.out
+drwxrwxrwx+ 2 codespace codespace  4096 Sep 13 03:02 src
+-rw-rw-rw-  1 codespace codespace    55 Sep 13 00:45 test.txt
+drwxrwxrwx+ 2 codespace codespace  4096 Sep 16 03:58 testdir
